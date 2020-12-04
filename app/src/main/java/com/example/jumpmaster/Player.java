@@ -252,9 +252,10 @@ public class Player {
         switchState(PlayerState.IDLE);
     }
 
-    public void stopJumping(){
+    public void stopJumping(float topTile){
         if(isJumping){
             isJumping = false;
+            //y = topTile-(getBottomBoundary()-getTopBoundary());
         }
     }
 
@@ -262,6 +263,21 @@ public class Player {
         isFalling = true;
         stepY = 30 * ratio;
         stepX = 0;
+
+        //
+       /* float dT = 0.48f;
+        float mass = (float)1.0;
+        float gravityForce = mass*jumpGravity;
+
+        jumpVelocityX += 0/mass * dT;
+        jumpVelocityY += gravityForce/mass * dT;
+
+        x += jumpVelocityX * dT;
+        y += jumpVelocityY * dT;*/
+        //
+
+        /*stepY = jumpVelocityY;
+        stepX = jumpVelocityX;*/
         switchState(PlayerState.FALL);
     }
 
@@ -270,6 +286,7 @@ public class Player {
         isLaying = true;
         switchState(PlayerState.IDLE);
         stepY = 0;
+        //y = topTile-(getBottomBoundary()-getTopBoundary());
     }
 
     public void jump(float ratio) {
@@ -289,6 +306,8 @@ public class Player {
 
             jumpGravity = (float) 9.8 * ratio;
 
+            jumpPower -= 1.2;
+
             double angle = 70 * 3.141459 / 180;
 
             if (direction == Direction.RIGHT)
@@ -307,6 +326,10 @@ public class Player {
     public void changeJumpDirection(){
         jumpVelocityX *= -1;
         direction = (direction == Direction.RIGHT)?Direction.LEFT:Direction.RIGHT;
+    }
+
+    public void changeJumpTopDirection(){
+        jumpVelocityY *= -1;
     }
 
     private void switchState(PlayerState state){
@@ -367,6 +390,10 @@ public class Player {
     }
     public float getTopBoundary(){
         return y - topY;
+    }
+
+    public RectF getCollisionShape(){
+        return new RectF(getLeftBoundary(),getTopBoundary(),getRightBoundary(),getBottomBoundary());
     }
 
 

@@ -3,6 +3,7 @@ package com.example.jumpmaster;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -86,18 +87,55 @@ public class GameView extends SurfaceView implements Runnable {
             player.stopMove();
         }
 
-        if(!levels.isGround(player.getLeftBoundary(),player.getBottomBoundary()) && !player.isJumping){
+        /*if(!levels.isGround(player.getLeftBoundary(),player.getRightBoundary(),player.getBottomBoundary()) && !player.isJumping){
             player.fall(screenRatioY);
         }
         else {
             if(player.isFalling) {
                 player.svartaJump();
             }
+        }*/
+
+        //kontrola skoku
+        /*if(player.isJumping && levels.isGround(player.getLeftBoundary(),player.getRightBoundary(),player.getBottomBoundary())){
+            player.stopJumping();
+        }*/
+
+        //kolize
+        RectF playerRect = player.getCollisionShape();
+        RectF levelRect = levels.isIntersectWithGround(playerRect);
+        if(levelRect != null){
+            //nahore
+            if(playerRect.bottom < levelRect.bottom){
+                if(player.isJumping){
+                    player.stopJumping(levelRect.top);
+                }
+                else if(player.isFalling) {
+                    player.svartaJump();
+                }
+            }
+            //leva strana
+
+            if(playerRect.left > levelRect.left && player.isJumping)
+                 player.changeJumpDirection();
+            //prava strana
+            if(playerRect.right < levelRect.right && player.isJumping)
+                player.changeJumpDirection();
+
+            else{
+                player.fall(screenRatioY);
+            }
+            if(playerRect.top > levelRect.top && player.isJumping){
+                player.changeJumpTopDirection();
+            }
+        }
+        else if(!player.isJumping) {
+            player.fall(screenRatioY);
         }
 
-        if(player.isJumping && levels.isGround(player.getLeftBoundary(),player.getBottomBoundary())){
-            player.stopJumping();
-        }
+        /*if(player.isJumping && levels.isBouncable(player.getLeftBoundary(),player.getRightBoundary(),player.getBottomBoundary())){
+            player.changeJumpDirection();
+        }*/
 
     }
 

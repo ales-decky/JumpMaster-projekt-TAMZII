@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.graphics.RectF;
 
 import java.io.InputStream;
 import java.util.List;
@@ -111,14 +112,43 @@ public class TileMap {
         for(int i = 0; i < ly; i++){
             for( int j = 0; j < lx; j++) {
                 canvas.drawBitmap(mapSet[i*lx + j].bitmap, null,
-                        new Rect(j * (width/lx), i * (height/ly), (j + 1) * (width/lx), (i + 1) * (height/ly)), null);
+                        new RectF(j * (width/lx), i * (height/ly), (j + 1) * (width/lx), (i + 1) * (height/ly)), null);
             }
         }
     }
 
-    public boolean isGround(float x, float y) {
-        Tile tile = getTile(x, y);
-        return tile.tileType == TileType.GROUND;
+    public boolean isGround(float leftP, float rightP, float y) {
+        return getTile(leftP, y).tileType == TileType.GROUND || getTile(rightP, y).tileType == TileType.GROUND;
+    }
+
+    /*public boolean isBouncable(float leftP, float rightP,float y){
+
+        //leva strana panacka
+        if(getTile(leftP,y).tileType == TileType.GROUND)
+
+        return (isGround(leftP-width/lx,rightP-width/lx,y) && getTileRight(leftP-width/lx) > leftP) || (getTileLeft(rightP+width/lx) < rightP && isGround(leftP+width/lx,rightP+width/lx,y));
+    }*/
+
+    public RectF isIntersectWithGround(RectF player){
+        //left top
+        RectF tileRect = getGroundTileRect(player.left,player.top);
+        //right top
+        if(tileRect == null)
+            tileRect = getGroundTileRect(player.right,player.top);
+        //left bot
+        if(tileRect == null)
+            tileRect = getGroundTileRect(player.left,player.bottom);
+        //right bot
+        if(tileRect == null)
+            tileRect = getGroundTileRect(player.right,player.bottom);
+
+        if(tileRect != null){
+            if(RectF.intersects(player,tileRect))
+                return tileRect;
+            else
+                return null;
+        }
+        return null;
     }
 
     private Tile getTile(float x, float y) {
@@ -127,5 +157,29 @@ public class TileMap {
         return mapSet[j*lx + i];
     }
 
+    private RectF getGroundTileRect(float x, float y){
+        int i = (int)x/(width/lx);
+        int j = (int)y/(height/ly);
+        if(mapSet[j*lx + i].tileType == TileType.GROUND){
+            return new RectF(i * (width/lx), j * (height/ly), (i + 1) * (width/lx), (j + 1) * (height/ly));
+        }
+        return null;
+    }
+
+    /*private float getTileRight(float x){
+        return x/(width/lx)+(width/lx);
+    }
+
+    private float getTileLeft(float x){
+        return x/(width/lx);
+    }
+
+    private float getTileTop(float y){
+        return y/(height/ly);
+    }
+
+    private float getTileBottom(float y){
+        return y/(height/ly)+(height/ly);
+    }*/
 
 }

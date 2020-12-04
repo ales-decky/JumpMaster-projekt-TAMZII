@@ -116,14 +116,14 @@ public class TileMap {
         }
     }
 
-    public boolean isGround(int x, int y) {
+    public boolean isGround(float x, float y) {
         Tile tile = getTile(x, y);
         return tile.tileType == TileType.GROUND;
     }
 
-    private Tile getTile(int x, int y) {
-        int i = x/(width/lx);
-        int j = y/(height/ly);
+    private Tile getTile(float x, float y) {
+        int i = (int)x/(width/lx);
+        int j = (int)y/(height/ly);
         return mapSet[j*lx + i];
     }
 

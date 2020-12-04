@@ -15,7 +15,7 @@ public class GameView extends SurfaceView implements Runnable {
 
     private Thread thread;
     private boolean isPlaying;
-    private int screenX, screenY;
+    private float screenX, screenY;
     private float screenRatioX, screenRatioY;
     private Paint paint;
     private TileMap levels;
@@ -78,16 +78,25 @@ public class GameView extends SurfaceView implements Runnable {
             background2.x = screenX;
         }
 
-        if((player.x + player.width > screenX) || (player.x < 0)){
+        //hranice steny
+        if((player.getRightBoundary() > screenX) || (player.getLeftBoundary() < 0)){
+            if(player.isJumping){
+                player.changeJumpDirection();
+            }
             player.stopMove();
         }
 
-        if(!levels.isGround(player.x,player.y+player.height) && !player.isJumping){
+        if(!levels.isGround(player.getLeftBoundary(),player.getBottomBoundary()) && !player.isJumping){
             player.fall(screenRatioY);
         }
         else {
-            if(player.isFalling)
+            if(player.isFalling) {
                 player.svartaJump();
+            }
+        }
+
+        if(player.isJumping && levels.isGround(player.getLeftBoundary(),player.getBottomBoundary())){
+            player.stopJumping();
         }
 
     }
@@ -134,28 +143,24 @@ public class GameView extends SurfaceView implements Runnable {
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN: {
                 if(event.getX() < screenX * (1/3.0)) {
-                    if(player.x >= 0)
+                    if(player.getLeftBoundary() >= 0)
                         player.move(Direction.LEFT, screenRatioX);
-                    else {
-                        player.x = 0;
-                    }
                 }
                 else if(event.getX() < screenX * (2/3.0)) {
                     //jump
-                    player.jump(screenRatioX,0);
+                    player.prepareToJump();
                 }
                 else {
-                    if(player.x + player.width <= screenX)
+                    if(player.getRightBoundary() < screenX)
                         player.move(Direction.RIGHT,screenRatioX);
-                    else{
-                        //?????????????
-                        player.x = screenX - player.width;
-                    }
                 }
                 return true;
             }
             case MotionEvent.ACTION_UP: {
                 player.stopMove();
+                if(player.isReadyToJump) {
+                    player.jump(screenRatioY);
+                }
                 break;
             }
         }
@@ -167,4 +172,5 @@ public class GameView extends SurfaceView implements Runnable {
         //down direction
         //if(player.y + player.height)
     }
+
 }

@@ -4,7 +4,9 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
@@ -40,7 +42,7 @@ public class Player {
 
     private int maxX;
     private int maxY;
-    private float stepX;
+    private float stepX = 0;
     private float stepY;
 
     private boolean isLaying = false;
@@ -48,6 +50,7 @@ public class Player {
     public boolean isFalling = false;
 
     public boolean isJumping = false;
+    public boolean isJumpingDown = false;
     private float jumpStartPosY;
     private float jumpTopY;
     private float jumpGravity = (float)9.8;
@@ -105,22 +108,20 @@ public class Player {
         anim = 0;
 
 
-
-        stepX = 0;
         stepY = 0;
 
         drawWidth = screenX/9;
         drawHeight = screenY/16;
 
         x = screenX/2;
-        y = screenY-2*drawHeight;
+        y = screenY-3*drawHeight;
 
         maxX = screenX;
         maxY = screenY;
 
         leftX = drawWidth * 0.15625f;
-        rightX = drawWidth * 0.46875f;
-        topY = drawHeight * 0.0625f;
+        rightX = drawWidth * 0.42875f;
+        topY = drawHeight * 0.0125f;
         bottomY = drawHeight * 0.0f;
 
         width = drawWidth;
@@ -180,10 +181,12 @@ public class Player {
                     if(jumpTopY >= y) {
                         if (anim == 2)
                             anim = 1;
+                        isJumpingDown = false;
                     }
                     else {
                         if (anim == jumping.length)
                             anim = jumping.length-1;
+                        isJumpingDown = true;
                     }
                     //vyresit cas
                     //isJumping = false;
@@ -212,7 +215,11 @@ public class Player {
 
         canvas.drawBitmap(Bitmap.createBitmap(bInput,0,0, bInput.getWidth(), bInput.getHeight(), m, true ), null,
                 new RectF(x, y, x + drawWidth, y + drawHeight), null);
-
+        Paint paint = new Paint();
+        paint.setColor(Color.RED);
+        paint.setStrokeWidth(5);
+        paint.setStyle(Paint.Style.STROKE);
+        canvas.drawRect(getCollisionShape(), paint);
     }
 
     public void move(Direction dir, float ratio){
@@ -247,15 +254,21 @@ public class Player {
         }
     }
 
-    public void stopMove(){
+    public void stopMove(int posiX){
         stepX = 0;
+        if(!(posiX == -1)){
+            if(direction == Direction.RIGHT)
+                x = posiX-width-leftX;
+            else
+                x = posiX-rightX;
+        }
         switchState(PlayerState.IDLE);
     }
 
-    public void stopJumping(float topTile){
+    public void stopJumping(float top, float heightTile){
         if(isJumping){
             isJumping = false;
-            //y = topTile-(getBottomBoundary()-getTopBoundary());
+            y = top-heightTile;
         }
     }
 
@@ -281,11 +294,12 @@ public class Player {
         switchState(PlayerState.FALL);
     }
 
-    public void svartaJump(){
+    public void svartaJump(float top, float heightTile){
         isFalling = false;
         isLaying = true;
         switchState(PlayerState.IDLE);
         stepY = 0;
+        y = top-heightTile;
         //y = topTile-(getBottomBoundary()-getTopBoundary());
     }
 
@@ -375,9 +389,9 @@ public class Player {
 
     public float getLeftBoundary(){
         if(direction == Direction.RIGHT)
-            return x+rightX;
-        else
             return x+leftX;
+        else
+            return x+rightX;
     }
     public float getRightBoundary(){
         if(direction == Direction.RIGHT)
@@ -394,6 +408,7 @@ public class Player {
 
     public RectF getCollisionShape(){
         return new RectF(getLeftBoundary(),getTopBoundary(),getRightBoundary(),getBottomBoundary());
+        //return new  RectF(x, y, x + drawWidth, y + drawHeight);
     }
 
 

@@ -79,13 +79,7 @@ public class GameView extends SurfaceView implements Runnable {
             background2.x = screenX;
         }
 
-        //hranice steny
-        if((player.getRightBoundary() > screenX) || (player.getLeftBoundary() < 0)){
-            if(player.isJumping){
-                player.changeJumpDirection();
-            }
-            player.stopMove();
-        }
+
 
         /*if(!levels.isGround(player.getLeftBoundary(),player.getRightBoundary(),player.getBottomBoundary()) && !player.isJumping){
             player.fall(screenRatioY);
@@ -103,34 +97,86 @@ public class GameView extends SurfaceView implements Runnable {
 
         //kolize
         RectF playerRect = player.getCollisionShape();
+
+        //hranice steny
+        if(playerRect.left < 0){
+            if(player.isJumping && player.direction == Direction.LEFT){
+                player.changeJumpDirection();
+            }
+            player.stopMove(0);
+        }
+
+        if((playerRect.right > screenX)){
+            if(player.isJumping && player.direction == Direction.RIGHT){
+                player.changeJumpDirection();
+            }
+            player.stopMove((int)screenX);
+        }
+
+        if(!levels.isGround(playerRect.left,playerRect.right,playerRect.bottom) && !player.isJumping){
+            player.fall(screenRatioY);
+        }
+        else {
+            /*if(player.isFalling) {
+                player.svartaJump();
+            }*/
+        }
+
         RectF levelRect = levels.isIntersectWithGround(playerRect);
+        boolean isTopJumping = false;
+
+
         if(levelRect != null){
             //nahore
-            if(playerRect.bottom < levelRect.bottom){
-                if(player.isJumping){
-                    player.stopJumping(levelRect.top);
+
+            if(((((playerRect.right-levelRect.left) < (levelRect.bottom-playerRect.top)) || ((levelRect.right-playerRect.left) < (levelRect.bottom-playerRect.top)))) && player.isJumping){
+                //if(playerRect.bottom > levelRect.top){
+                    if(player.isJumping && player.isJumpingDown && ((levelRect.right-playerRect.left >  playerRect.bottom - levelRect.top && player.direction == Direction.LEFT) || ((playerRect.right-levelRect.left >  playerRect.bottom - levelRect.top && player.direction == Direction.RIGHT)))){
+                        player.stopJumping(levelRect.top,levelRect.bottom-levelRect.top);
+                    }
+                    else if(player.isFalling) {
+                        player.svartaJump(levelRect.top, levelRect.bottom-levelRect.top);
+                    }
+                //}
+                //else if ((playerRect.left > levelRect.left || playerRect.right < levelRect.right) && player.isJumping){
+                //strana
+                //kontrola sousednich bloku
+                else{
+                    player.changeJumpDirection();
+                }
+            }
+            else if(((playerRect.right-levelRect.left) > (levelRect.bottom-playerRect.top)) || ((levelRect.right-playerRect.left) > (levelRect.bottom-playerRect.top))/* playerRect.top < levelRect.bottom*/  && player.isJumping){
+
+                player.changeJumpTopDirection();
+                isTopJumping = true;
+            }
+            else if(playerRect.bottom > levelRect.top && player.isFalling){
+
+                    player.svartaJump(levelRect.top, levelRect.bottom-levelRect.top);
+
+            }
+
+            /*else if(playerRect.bottom > levelRect.top ){
+                if(player.isJumping && player.isJumpingDown && (levelRect.right-playerRect.left > levelRect.top - playerRect.bottom)){
+                    player.stopJumping(levelRect.top,levelRect.bottom-levelRect.top);
                 }
                 else if(player.isFalling) {
-                    player.svartaJump();
+                    player.svartaJump(levelRect.top, levelRect.bottom-levelRect.top);
                 }
-            }
-            //leva strana
+            }*/
 
-            if(playerRect.left > levelRect.left && player.isJumping)
-                 player.changeJumpDirection();
-            //prava strana
-            if(playerRect.right < levelRect.right && player.isJumping)
-                player.changeJumpDirection();
 
-            else{
-                player.fall(screenRatioY);
-            }
-            if(playerRect.top > levelRect.top && player.isJumping){
-                player.changeJumpTopDirection();
-            }
+            //odrazeni od boku
+
+
+
+
+            //odrazeni od stropu
+
+
         }
         else if(!player.isJumping) {
-            player.fall(screenRatioY);
+            //player.fall(screenRatioY);
         }
 
         /*if(player.isJumping && levels.isBouncable(player.getLeftBoundary(),player.getRightBoundary(),player.getBottomBoundary())){
@@ -195,7 +241,7 @@ public class GameView extends SurfaceView implements Runnable {
                 return true;
             }
             case MotionEvent.ACTION_UP: {
-                player.stopMove();
+                player.stopMove(-1);
                 if(player.isReadyToJump) {
                     player.jump(screenRatioY);
                 }

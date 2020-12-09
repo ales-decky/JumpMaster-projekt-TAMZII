@@ -17,7 +17,7 @@ public class TileMap {
     public List<Tile> tileList;
 
     private Resources resource;
-
+    private int LevelNumber;
 
     private int width;
     private int height;
@@ -25,13 +25,15 @@ public class TileMap {
     private int lx = 9;
     private int ly = 16;
 
-    TileMap(Resources res, int screenX, int screenY){
+    TileMap(Resources res, int screenX, int screenY, int levelNumber){
         //tileList.add(new Tile(BitmapFactory.decodeResource(getResources(), R.drawable.left_corner)));
 
         width = screenX;
         height = screenY;
 
         resource = res;
+
+        LevelNumber = levelNumber;
 
         AssetManager assetManager = resource.getAssets();
         InputStream input;
@@ -47,7 +49,8 @@ public class TileMap {
 
             String[] splittedText =  text.split("\r\n\r\n");
 
-            for (String levelek : splittedText) {
+            String levelek = splittedText[LevelNumber];
+            //for (String levelek : ) {
                 //Log.d("splittedText ", levelek);
                 //levelek = levelek.split("'\r\n")[1];
                 levelek = levelek.replace("\r","");
@@ -76,7 +79,7 @@ public class TileMap {
                 textToTiles(level);
                 //mapSet = level;
                 //Log.d("testText ", testText);
-            }
+            //}
 
         }
         catch (IOException e){

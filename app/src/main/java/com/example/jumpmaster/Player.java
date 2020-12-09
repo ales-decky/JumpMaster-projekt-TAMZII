@@ -51,6 +51,7 @@ public class Player {
 
     public boolean isJumping = false;
     public boolean isJumpingDown = false;
+    public boolean doSvarta = false;
     private float jumpStartPosY;
     private float jumpTopY;
     private float jumpGravity = (float)9.8;
@@ -114,7 +115,7 @@ public class Player {
         drawHeight = screenY/16;
 
         x = screenX/2;
-        y = screenY-3*drawHeight;
+        y = 3*drawHeight;
 
         maxX = screenX;
         maxY = screenY;
@@ -130,7 +131,7 @@ public class Player {
 
     public void redraw(Canvas canvas){
         x += stepX;
-        if(getRightBoundary() > maxX){
+        /*if(getRightBoundary() > maxX){
             if(direction == Direction.RIGHT)
                 x = maxX - (width-rightX);
             else
@@ -178,7 +179,7 @@ public class Player {
                 if(isJumping){
                     bInput = jumping[anim++];
                     //prvni dve animace vyskoku
-                    if(jumpTopY >= y) {
+                    if(jumpVelocityY < 0) {
                         if (anim == 2)
                             anim = 1;
                         isJumpingDown = false;
@@ -188,7 +189,6 @@ public class Player {
                             anim = jumping.length-1;
                         isJumpingDown = true;
                     }
-                    //vyresit cas
                     //isJumping = false;
                     jumping((float)0.48);
                 }
@@ -227,42 +227,42 @@ public class Player {
 
             if(direction != dir){
                 if(dir == Direction.RIGHT){
-                    x = x + rightX - leftX;
+                    x = x + (rightX - leftX);
                 }
                 else {
-                    x = x + leftX - rightX;
+                    x = x - (rightX - leftX);
                 }
+                direction = dir;
             }
 
-            direction = dir;
-            if (direction == Direction.RIGHT) {
+                if (direction == Direction.RIGHT) {
 
-                stepX += moveSpeed * ratio;
-                if (stepX > maxSpeed * ratio) {
-                    stepX = maxSpeed * ratio;
+                    stepX += moveSpeed * ratio;
+                    if (stepX > maxSpeed * ratio) {
+                        stepX = maxSpeed * ratio;
+                    }
+                } else {
+
+
+                    stepX -= moveSpeed * ratio;
+                    if (stepX < -maxSpeed * ratio) {
+                        stepX = -maxSpeed * ratio;
+                    }
                 }
-            } else {
-
-
-
-                stepX -= moveSpeed * ratio;
-                if (stepX < -maxSpeed * ratio) {
-                    stepX = -maxSpeed * ratio;
-                }
-            }
             switchState(PlayerState.MOVING);
         }
     }
 
-    public void stopMove(int posiX){
+    public void stopMove(){
         stepX = 0;
-        if(!(posiX == -1)){
-            if(direction == Direction.RIGHT)
-                x = posiX-width-leftX;
-            else
-                x = posiX-rightX;
-        }
         switchState(PlayerState.IDLE);
+    }
+
+    public void setX(float posiX){
+        if(direction == Direction.RIGHT)
+            x = posiX-leftX;
+        else
+            x = posiX-rightX;
     }
 
     public void stopJumping(float top, float heightTile){
@@ -270,6 +270,7 @@ public class Player {
             isJumping = false;
             y = top-heightTile;
         }
+        switchState(PlayerState.IDLE);
     }
 
     public void fall(float ratio){
@@ -339,7 +340,15 @@ public class Player {
 
     public void changeJumpDirection(){
         jumpVelocityX *= -1;
+
+        if(direction == Direction.LEFT){
+            x = x + (rightX - leftX);
+        }
+        else {
+            x = x - (rightX - leftX);
+        }
         direction = (direction == Direction.RIGHT)?Direction.LEFT:Direction.RIGHT;
+
     }
 
     public void changeJumpTopDirection(){
@@ -360,16 +369,21 @@ public class Player {
         float mass = (float)1.0;
 
         if(y > jumpStartPosY){
-            y = jumpStartPosY;
-            isJumping = false;
-            switchState(PlayerState.IDLE);
-            return;
+            doSvarta = true;
+            //y = jumpStartPosY;
+            //isJumping = false;
+            //switchState(PlayerState.IDLE);
+            //return;
         }
 
         float gravityForce = mass*jumpGravity;
 
         jumpVelocityX += 0/mass * dT;
         jumpVelocityY += gravityForce/mass * dT;
+
+        if(jumpVelocityY > 90) {
+            jumpVelocityY = 90;
+        }
 
         x += jumpVelocityX * dT;
         y += jumpVelocityY * dT;
@@ -384,6 +398,8 @@ public class Player {
             if (!isReadyToJump)
                 startTimeJump = System.currentTimeMillis();
             isReadyToJump = true;
+            doSvarta = false;
+            isLaying = false;
         }
     }
 

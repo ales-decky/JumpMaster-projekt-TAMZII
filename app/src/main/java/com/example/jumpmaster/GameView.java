@@ -19,14 +19,14 @@ public class GameView extends SurfaceView implements Runnable {
     private float screenX, screenY;
     private float screenRatioX, screenRatioY;
     private Paint paint;
-    private TileMap levels;
+    private TileMap[] levels;
     private int selectedLevel;
 
     private Player player;
 
     private MediaPlayer mediaPlayer;
 
-    private Background background1, background2;
+    private Background background1, background2, backgroundStill;
 
     public GameView(GameActivity activity, int screenX, int screenY) {
         super(activity);
@@ -43,13 +43,16 @@ public class GameView extends SurfaceView implements Runnable {
         screenRatioY = 2340f / screenY;
 
 
-        background1 = new Background(screenX, screenY, getResources());
-        background2 = new Background(screenX, screenY, getResources());
+        background1 = new Background(screenX, screenY, getResources(),R.drawable.background_01);
+        background2 = new Background(screenX, screenY, getResources(),R.drawable.background_01);
 
         background2.x = screenX;
 
-        //levels = new TileMap[1];
-        levels = new TileMap(getResources(), screenX, screenY);
+        backgroundStill = new Background(screenX,screenY,getResources(),R.drawable.no_sky_background);
+
+        levels = new TileMap[2];
+        levels[0] = new TileMap(getResources(), screenX, screenY, 0);
+        levels[1] = new TileMap(getResources(), screenX, screenY, 1);
 
         player = new Player(screenY,screenX,getResources());
 
@@ -68,8 +71,8 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     private void update() {
-        background1.x -= 3*screenRatioX;
-        background2.x -= 3*screenRatioX;
+        background1.x -= 1.5*screenRatioX;
+        background2.x -= 1.5*screenRatioX;
 
         if (background1.x + background1.background.getWidth() < 0) {
             background1.x = screenX;
@@ -98,22 +101,40 @@ public class GameView extends SurfaceView implements Runnable {
         //kolize
         RectF playerRect = player.getCollisionShape();
 
+        //prepinani levelu
+        if(playerRect.bottom < 0){
+            selectedLevel++;
+            player.y += screenY;
+            playerRect = player.getCollisionShape();
+        }
+        else if(playerRect.bottom > screenY){
+            selectedLevel--;
+            player.y -= screenY;
+            playerRect = player.getCollisionShape();
+        }
+
         //hranice steny
         if(playerRect.left < 0){
+            player.setX(0);
             if(player.isJumping && player.direction == Direction.LEFT){
                 player.changeJumpDirection();
             }
-            player.stopMove(0);
+            else
+                player.stopMove();
+
         }
 
         if((playerRect.right > screenX)){
+            player.setX(screenX-(playerRect.right-playerRect.left));
             if(player.isJumping && player.direction == Direction.RIGHT){
                 player.changeJumpDirection();
             }
-            player.stopMove((int)screenX);
+            else
+                player.stopMove();
+
         }
 
-        if(!levels.isGround(playerRect.left,playerRect.right,playerRect.bottom) && !player.isJumping){
+        if(!levels[selectedLevel].isGround(playerRect.left,playerRect.right,playerRect.bottom) && !player.isJumping){
             player.fall(screenRatioY);
         }
         else {
@@ -122,8 +143,8 @@ public class GameView extends SurfaceView implements Runnable {
             }*/
         }
 
-        RectF levelRect = levels.isIntersectWithGround(playerRect);
-        boolean isTopJumping = false;
+
+        RectF levelRect = levels[selectedLevel].isIntersectWithGround(playerRect);
 
 
         if(levelRect != null){
@@ -133,6 +154,8 @@ public class GameView extends SurfaceView implements Runnable {
                 //if(playerRect.bottom > levelRect.top){
                     if(player.isJumping && player.isJumpingDown && ((levelRect.right-playerRect.left >  playerRect.bottom - levelRect.top && player.direction == Direction.LEFT) || ((playerRect.right-levelRect.left >  playerRect.bottom - levelRect.top && player.direction == Direction.RIGHT)))){
                         player.stopJumping(levelRect.top,levelRect.bottom-levelRect.top);
+                        if(player.doSvarta)
+                            player.svartaJump(levelRect.top, levelRect.bottom-levelRect.top);
                     }
                     else if(player.isFalling) {
                         player.svartaJump(levelRect.top, levelRect.bottom-levelRect.top);
@@ -142,13 +165,17 @@ public class GameView extends SurfaceView implements Runnable {
                 //strana
                 //kontrola sousednich bloku
                 else{
+                    /*if(player.direction == Direction.RIGHT)
+                        player.setX(levelRect.left-(playerRect.right-playerRect.left)-1);
+                    else
+                        player.setX(levelRect.right+1);*/
                     player.changeJumpDirection();
+
                 }
             }
             else if(((playerRect.right-levelRect.left) > (levelRect.bottom-playerRect.top)) || ((levelRect.right-playerRect.left) > (levelRect.bottom-playerRect.top))/* playerRect.top < levelRect.bottom*/  && player.isJumping){
 
                 player.changeJumpTopDirection();
-                isTopJumping = true;
             }
             else if(playerRect.bottom > levelRect.top && player.isFalling){
 
@@ -191,7 +218,10 @@ public class GameView extends SurfaceView implements Runnable {
             canvas.drawBitmap(background1.background,background1.x,background1.y, paint);
             canvas.drawBitmap(background2.background,background2.x,background2.y, paint);
 
-            levels.redraw(canvas);
+            if(selectedLevel == 0)
+                canvas.drawBitmap(backgroundStill.background,backgroundStill.x,backgroundStill.y, paint);
+
+            levels[selectedLevel].redraw(canvas);
 
             player.redraw(canvas);
 
@@ -241,7 +271,7 @@ public class GameView extends SurfaceView implements Runnable {
                 return true;
             }
             case MotionEvent.ACTION_UP: {
-                player.stopMove(-1);
+                player.stopMove();
                 if(player.isReadyToJump) {
                     player.jump(screenRatioY);
                 }

@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">Jump Master</string>
-    <string name="play_btn">Play</string>
+    <string name="play_btn">New game</string>
+    <string name="continue_btn">Continue</string>
+    <string name="totalStats_btn">Total stats</string>
+    <string name="insert_text">Insert name</string>
+    <string name="playNewGame_btn">Play</string>
 </resources>

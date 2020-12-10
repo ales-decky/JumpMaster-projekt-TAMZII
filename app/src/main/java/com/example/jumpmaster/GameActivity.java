@@ -19,7 +19,14 @@ public class GameActivity extends AppCompatActivity {
         Point point = new Point();
         getWindowManager().getDefaultDisplay().getSize(point);
 
-        gameView = new GameView(this, point.x, point.y);
+        float playerX = getIntent().getFloatExtra("playerX",0);
+        float playerY = getIntent().getFloatExtra("playerY",0);
+        int numOfJumps = getIntent().getIntExtra("numOfJumps",0);
+        int numOfFalls = getIntent().getIntExtra("numOfFalls",0);
+        int selectedLevel = getIntent().getIntExtra("selectedLevel",0);
+        int elapsedTimeSec = getIntent().getIntExtra("elapsedTimeSec",0);
+
+        gameView = new GameView(this, point.x, point.y, playerX,playerY,numOfJumps,numOfFalls,selectedLevel,elapsedTimeSec);
 
         setContentView(gameView);
     }

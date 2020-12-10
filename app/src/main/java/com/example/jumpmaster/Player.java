@@ -10,6 +10,8 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
+import androidx.annotation.Nullable;
+
 import static java.lang.Math.cos;
 import static java.lang.Math.round;
 import static java.lang.StrictMath.sin;
@@ -64,12 +66,15 @@ public class Player {
     private float jumpPower;
     public boolean isReadyToJump = false;
 
+    private int numOfJumps;
+    private int numOfFalls;
+
     private Bitmap[] idle;
     private Bitmap[] moving;
     private Bitmap[] jumping;
     private Bitmap[] fall;
 
-    public Player(int screenY, int screenX, Resources res){
+    public Player(int screenY, int screenX, Resources res, float playerX, float playerY, int numOfJumps, int numOfFalls){
         idle = new Bitmap[]{
                 BitmapFactory.decodeResource(res, R.drawable.idle_01),
                 BitmapFactory.decodeResource(res, R.drawable.idle_02),
@@ -114,8 +119,17 @@ public class Player {
         drawWidth = screenX/9;
         drawHeight = screenY/16;
 
-        x = screenX/2;
-        y = 3*drawHeight;
+        if(playerX == 0 && playerY == 0) {
+            x = screenX / 2;
+            y = 3 * drawHeight;
+        }
+        else {
+            x = playerX;
+            y = playerY;
+        }
+
+        this.numOfFalls = numOfFalls;
+        this.numOfJumps = numOfJumps;
 
         maxX = screenX;
         maxY = screenY;

@@ -28,9 +28,8 @@ public class GameView extends SurfaceView implements Runnable {
 
     private Background background1, background2, backgroundStill;
 
-    public GameView(GameActivity activity, int screenX, int screenY) {
+    public GameView(GameActivity activity, int screenX, int screenY, float playerX, float playerY, int numOfJumps, int numOfFalls, int selectedLevel, int elapsedTimeSec) {
         super(activity);
-
 
         mediaPlayer = MediaPlayer.create(activity.getApplicationContext(), R.raw.theme);
         mediaPlayer.setLooping(true);
@@ -54,9 +53,11 @@ public class GameView extends SurfaceView implements Runnable {
         levels[0] = new TileMap(getResources(), screenX, screenY, 0);
         levels[1] = new TileMap(getResources(), screenX, screenY, 1);
 
-        player = new Player(screenY,screenX,getResources());
 
-        selectedLevel = 0;
+        player = new Player(screenY,screenX,getResources(),playerX,playerY, numOfJumps, numOfFalls);
+
+
+        this.selectedLevel = selectedLevel;
 
         paint = new Paint();
     }

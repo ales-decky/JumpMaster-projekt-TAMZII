@@ -9,7 +9,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".InsertNameActivity"></activity>
+        <activity android:name=".GameContinue"></activity>
+        <activity android:name=".TotalStatsActivity" />
+        <activity android:name=".InsertNameActivity" />
         <activity
             android:name=".GameActivity"
             android:screenOrientation="portrait"

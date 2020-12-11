@@ -24,9 +24,11 @@ public class GameActivity extends AppCompatActivity {
         int numOfJumps = getIntent().getIntExtra("numOfJumps",0);
         int numOfFalls = getIntent().getIntExtra("numOfFalls",0);
         int selectedLevel = getIntent().getIntExtra("selectedLevel",0);
+        int topLevel = getIntent().getIntExtra("topLevel",0);
         int elapsedTimeSec = getIntent().getIntExtra("elapsedTimeSec",0);
+        int gameId = getIntent().getIntExtra("gameId",0);
 
-        gameView = new GameView(this, point.x, point.y, playerX,playerY,numOfJumps,numOfFalls,selectedLevel,elapsedTimeSec);
+        gameView = new GameView(this, point.x, point.y, playerX,playerY,numOfJumps,numOfFalls,selectedLevel,topLevel,elapsedTimeSec,gameId);
 
         setContentView(gameView);
     }
@@ -41,5 +43,11 @@ public class GameActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         gameView.resume();
+    }
+
+    @Override
+    protected void onStop(){
+        super.onStop();
+        gameView.onStop();
     }
 }

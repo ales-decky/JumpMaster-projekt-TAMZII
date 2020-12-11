@@ -6,7 +6,12 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import androidx.core.util.Pair;
+
 import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DBHelper extends SQLiteOpenHelper {
 
@@ -28,7 +33,7 @@ public class DBHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public boolean createGame(String name, float playerX, float playerY, int selectedLevel, int numOfJumps, int numOfFalls, int elapsedTimeSec, int topLevel)
+    public int createGame(String name, float playerX, float playerY, int selectedLevel, int numOfJumps, int numOfFalls, int elapsedTimeSec, int topLevel)
     {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -41,8 +46,7 @@ public class DBHelper extends SQLiteOpenHelper {
         contentValues.put("topLevel", topLevel);
         contentValues.put("elapsedTimeSec", elapsedTimeSec);
         long insertedId = db.insert("games", null, contentValues);
-        if (insertedId == -1) return false;
-        return true;
+        return (int)insertedId;
     }
 
     public boolean deleteGame (int id)
@@ -52,10 +56,10 @@ public class DBHelper extends SQLiteOpenHelper {
         return true;
     }
 
-    public boolean updateGame (float playerX, float playerY, int selectedLevel, int numOfJumps, int numOfFalls, int elapsedTimeSec, int id)
+    public boolean updateGame (float playerX, float playerY, int selectedLevel, int numOfJumps, int numOfFalls, int elapsedTimeSec, int id, int topLevel)
     {
         SQLiteDatabase db = this.getReadableDatabase();
-        db.execSQL("UPDATE items SET playerX ='" + playerX + "', playerY ='" + playerY + "', selectedLevel ='" + selectedLevel + "', numOfJumps ='" + numOfJumps + "', numOfFalls ='" + numOfFalls + "', elapsedTimeSec ='" + elapsedTimeSec + "' WHERE id =" + id);
+        db.execSQL("UPDATE games SET playerX ='" + playerX + "', playerY ='" + playerY + "', selectedLevel ='" + selectedLevel + "', numOfJumps ='" + numOfJumps + "', numOfFalls ='" + numOfFalls + "', topLevel ='" + topLevel + "', elapsedTimeSec ='" + elapsedTimeSec + "' WHERE id =" + id);
         return true;
     }
 
@@ -67,21 +71,34 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public Cursor getTotalStats (){
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res =  db.rawQuery("select sum(numOfJumps), sum(numOfFalls), sum(elapsedTimeSec) from games", null);
+        Cursor res =  db.rawQuery("select sum(numOfJumps), sum(numOfFalls), sum(elapsedTimeSec), max(topLevel) from games", null);
         return res;
     }
 
-    public ArrayList<String> getGameList()
+    public ArrayList<Pair<Integer, String>> getGameList()
     {
-        ArrayList<String> arrayList = new ArrayList<String>();
+        ArrayList<Pair<Integer, String>> arrayList = new ArrayList<Pair<Integer, String>>();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor res =  db.rawQuery( "select * from games", null );
         res.moveToFirst();
 
         while(res.isAfterLast() == false){
+
             String name = res.getString(res.getColumnIndex("name"));
+            int jumps = res.getInt(res.getColumnIndex("numOfJumps"));
+            int falls = res.getInt(res.getColumnIndex("numOfFalls"));
+            int seconds = res.getInt(res.getColumnIndex("elapsedTimeSec"));
+            int level = res.getInt(res.getColumnIndex("selectedLevel"));
+            int topLevel = res.getInt(res.getColumnIndex("topLevel"));
+            String text = name + "\n (Jumps: " + jumps + ", Falls: " + falls + ", Time: " + seconds + " sec, Current level: " + level + ", Top level: " + topLevel + ")";
             int id = res.getInt(0);
-            arrayList.add("#" + id + " " + name);
+            Pair<Integer, String> game = new Pair<Integer, String>(id,text){
+                @Override
+                public String toString(){
+                    return this.second;
+                }
+            };
+            arrayList.add(game);
             res.moveToNext();
         }
 

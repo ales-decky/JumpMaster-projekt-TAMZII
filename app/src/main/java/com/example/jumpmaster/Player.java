@@ -66,8 +66,8 @@ public class Player {
     private float jumpPower;
     public boolean isReadyToJump = false;
 
-    private int numOfJumps;
-    private int numOfFalls;
+    public int numOfJumps;
+    public int numOfFalls;
 
     private Bitmap[] idle;
     private Bitmap[] moving;
@@ -315,6 +315,7 @@ public class Player {
         switchState(PlayerState.IDLE);
         stepY = 0;
         y = top-heightTile;
+        numOfFalls++;
         //y = topTile-(getBottomBoundary()-getTopBoundary());
     }
 
@@ -325,6 +326,8 @@ public class Player {
             jumpTopY = y;
 
             jumpStartPosY = y;
+
+            numOfJumps++;
 
             endTimeJump = System.currentTimeMillis();
 

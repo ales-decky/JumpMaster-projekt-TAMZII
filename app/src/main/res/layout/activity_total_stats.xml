@@ -11,47 +11,53 @@
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/play"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="110sp"
+        android:layout_marginBottom="95sp"
         android:text="@string/app_name"
         android:textSize="58sp" />
 
     <TextView
-        android:id="@+id/play"
+        android:id="@+id/textView7"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_above="@id/jumps"
+        android:text="@string/totalStats_btn"
         android:layout_centerInParent="true"
-        android:layout_above="@+id/textView2"
-        android:text="@string/play_btn"
-        android:layout_marginBottom="10sp"
-        android:textSize="40sp" />
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:layout_above="@+id/total_stats_btn"
-        android:text="@string/continue_btn"
-        android:layout_marginBottom="10sp"
         android:textSize="40sp"/>
 
     <TextView
-        android:id="@+id/total_stats_btn"
+        android:id="@+id/jumps"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:text="@string/totalStats_btn"
-        android:textSize="40sp" />
+        android:text="Number of jumps: 0"
+        android:textSize="30sp" />
 
-    <ImageView
-        android:id="@+id/volumeCTRL"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:layout_alignParentBottom="true"
+    <TextView
+        android:id="@+id/falls"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/jumps"
         android:layout_centerInParent="true"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="257dp"
-        android:src="@drawable/ic_baseline_volume_up_24" />
+        android:text="Number of falls: 0"
+        android:textSize="30sp" />
+
+    <TextView
+        android:id="@+id/elapsedTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/falls"
+        android:layout_centerInParent="true"
+        android:text="Elapsed time: 0 sec"
+        android:textSize="30sp" />
+
+    <TextView
+        android:id="@+id/topLevel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/elapsedTime"
+        android:layout_centerInParent="true"
+        android:text="Top achieved level: 0"
+        android:textSize="30sp" />
+
 </RelativeLayout>

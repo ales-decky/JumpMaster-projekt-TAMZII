@@ -1,6 +1,7 @@
 package com.example.jumpmaster;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
@@ -21,19 +22,29 @@ public class GameView extends SurfaceView implements Runnable {
     private Paint paint;
     private TileMap[] levels;
     private int selectedLevel;
+    private int topLevel;
+    private int gameId;
+    private int elapsedTimeSec;
+
+    private long startGameTime;
 
     private Player player;
 
     private MediaPlayer mediaPlayer;
+    private SharedPreferences prefs;
 
     private Background background1, background2, backgroundStill;
 
-    public GameView(GameActivity activity, int screenX, int screenY, float playerX, float playerY, int numOfJumps, int numOfFalls, int selectedLevel, int elapsedTimeSec) {
+    public GameView(GameActivity activity, int screenX, int screenY, float playerX, float playerY, int numOfJumps, int numOfFalls, int selectedLevel, int topLevel, int elapsedTimeSec, int gameId) {
         super(activity);
 
         mediaPlayer = MediaPlayer.create(activity.getApplicationContext(), R.raw.theme);
         mediaPlayer.setLooping(true);
-        mediaPlayer.start();
+
+        prefs = activity.getSharedPreferences("game",Context.MODE_PRIVATE);
+
+        if(!prefs.getBoolean("isMute",false))
+            mediaPlayer.start();
 
         this.screenX = screenX;
         this.screenY = screenY;
@@ -58,6 +69,11 @@ public class GameView extends SurfaceView implements Runnable {
 
 
         this.selectedLevel = selectedLevel;
+        this.topLevel = topLevel;
+        this.gameId = gameId;
+        this.elapsedTimeSec = elapsedTimeSec;
+
+        startGameTime = System.currentTimeMillis();
 
         paint = new Paint();
     }
@@ -82,135 +98,86 @@ public class GameView extends SurfaceView implements Runnable {
         if (background2.x + background2.background.getWidth() < 0) {
             background2.x = screenX;
         }
+        try {
+            //kolize
+            RectF playerRect = player.getCollisionShape();
 
-
-
-        /*if(!levels.isGround(player.getLeftBoundary(),player.getRightBoundary(),player.getBottomBoundary()) && !player.isJumping){
-            player.fall(screenRatioY);
-        }
-        else {
-            if(player.isFalling) {
-                player.svartaJump();
+            //prepinani levelu
+            if (playerRect.bottom < 0) {
+                selectedLevel++;
+                if (topLevel < selectedLevel)
+                    topLevel = selectedLevel;
+                //vyhjál
+                if(selectedLevel > levels.length-1){
+                    pause();
+                    //dodelat you won efect
+                }
+                player.y += screenY;
+                playerRect = player.getCollisionShape();
+            } else if (playerRect.bottom > screenY) {
+                selectedLevel--;
+                player.y -= screenY;
+                playerRect = player.getCollisionShape();
             }
-        }*/
 
-        //kontrola skoku
-        /*if(player.isJumping && levels.isGround(player.getLeftBoundary(),player.getRightBoundary(),player.getBottomBoundary())){
-            player.stopJumping();
-        }*/
-
-        //kolize
-        RectF playerRect = player.getCollisionShape();
-
-        //prepinani levelu
-        if(playerRect.bottom < 0){
-            selectedLevel++;
-            player.y += screenY;
-            playerRect = player.getCollisionShape();
-        }
-        else if(playerRect.bottom > screenY){
-            selectedLevel--;
-            player.y -= screenY;
-            playerRect = player.getCollisionShape();
-        }
-
-        //hranice steny
-        if(playerRect.left < 0){
-            player.setX(0);
-            if(player.isJumping && player.direction == Direction.LEFT){
-                player.changeJumpDirection();
-            }
-            else
-                player.stopMove();
-
-        }
-
-        if((playerRect.right > screenX)){
-            player.setX(screenX-(playerRect.right-playerRect.left));
-            if(player.isJumping && player.direction == Direction.RIGHT){
-                player.changeJumpDirection();
-            }
-            else
-                player.stopMove();
-
-        }
-
-        if(!levels[selectedLevel].isGround(playerRect.left,playerRect.right,playerRect.bottom) && !player.isJumping){
-            player.fall(screenRatioY);
-        }
-        else {
-            /*if(player.isFalling) {
-                player.svartaJump();
-            }*/
-        }
-
-
-        RectF levelRect = levels[selectedLevel].isIntersectWithGround(playerRect);
-
-
-        if(levelRect != null){
-            //nahore
-
-            if(((((playerRect.right-levelRect.left) < (levelRect.bottom-playerRect.top)) || ((levelRect.right-playerRect.left) < (levelRect.bottom-playerRect.top)))) && player.isJumping){
-                //if(playerRect.bottom > levelRect.top){
-                    if(player.isJumping && player.isJumpingDown && ((levelRect.right-playerRect.left >  playerRect.bottom - levelRect.top && player.direction == Direction.LEFT) || ((playerRect.right-levelRect.left >  playerRect.bottom - levelRect.top && player.direction == Direction.RIGHT)))){
-                        player.stopJumping(levelRect.top,levelRect.bottom-levelRect.top);
-                        if(player.doSvarta)
-                            player.svartaJump(levelRect.top, levelRect.bottom-levelRect.top);
-                    }
-                    else if(player.isFalling) {
-                        player.svartaJump(levelRect.top, levelRect.bottom-levelRect.top);
-                    }
-                //}
-                //else if ((playerRect.left > levelRect.left || playerRect.right < levelRect.right) && player.isJumping){
-                //strana
-                //kontrola sousednich bloku
-                else{
-                    /*if(player.direction == Direction.RIGHT)
-                        player.setX(levelRect.left-(playerRect.right-playerRect.left)-1);
-                    else
-                        player.setX(levelRect.right+1);*/
+            //hranice steny
+            if (playerRect.left < 0) {
+                player.setX(0);
+                if (player.isJumping && player.direction == Direction.LEFT) {
                     player.changeJumpDirection();
-
-                }
-            }
-            else if(((playerRect.right-levelRect.left) > (levelRect.bottom-playerRect.top)) || ((levelRect.right-playerRect.left) > (levelRect.bottom-playerRect.top))/* playerRect.top < levelRect.bottom*/  && player.isJumping){
-
-                player.changeJumpTopDirection();
-            }
-            else if(playerRect.bottom > levelRect.top && player.isFalling){
-
-                    player.svartaJump(levelRect.top, levelRect.bottom-levelRect.top);
+                } else
+                    player.stopMove();
 
             }
 
-            /*else if(playerRect.bottom > levelRect.top ){
-                if(player.isJumping && player.isJumpingDown && (levelRect.right-playerRect.left > levelRect.top - playerRect.bottom)){
-                    player.stopJumping(levelRect.top,levelRect.bottom-levelRect.top);
+            if ((playerRect.right > screenX)) {
+                player.setX(screenX - (playerRect.right - playerRect.left));
+                if (player.isJumping && player.direction == Direction.RIGHT) {
+                    player.changeJumpDirection();
+                } else
+                    player.stopMove();
+
+            }
+
+            if (!levels[selectedLevel].isGround(playerRect.left, playerRect.right, playerRect.bottom) && !player.isJumping) {
+                player.fall(screenRatioY);
+            }
+
+
+            RectF levelRect = levels[selectedLevel].isIntersectWithGround(playerRect);
+
+
+            if (levelRect != null) {
+                //nahore
+
+                if (((((playerRect.right - levelRect.left) < (levelRect.bottom - playerRect.top)) || ((levelRect.right - playerRect.left) < (levelRect.bottom - playerRect.top)))) && player.isJumping) {
+
+                    if (player.isJumping && player.isJumpingDown && ((levelRect.right - playerRect.left > playerRect.bottom - levelRect.top && player.direction == Direction.LEFT) || ((playerRect.right - levelRect.left > playerRect.bottom - levelRect.top && player.direction == Direction.RIGHT)))) {
+                        player.stopJumping(levelRect.top, levelRect.bottom - levelRect.top);
+                        if (player.doSvarta)
+                            player.svartaJump(levelRect.top, levelRect.bottom - levelRect.top);
+                    } else if (player.isFalling) {
+                        player.svartaJump(levelRect.top, levelRect.bottom - levelRect.top);
+                    }
+                    //strana
+                    //kontrola sousednich bloku
+                    else {
+                        player.changeJumpDirection();
+
+                    }
+                } else if (((playerRect.right - levelRect.left) > (levelRect.bottom - playerRect.top)) || ((levelRect.right - playerRect.left) > (levelRect.bottom - playerRect.top))/* playerRect.top < levelRect.bottom*/ && player.isJumping) {
+
+                    player.changeJumpTopDirection();
+                } else if (playerRect.bottom > levelRect.top && player.isFalling) {
+
+                    player.svartaJump(levelRect.top, levelRect.bottom - levelRect.top);
+
                 }
-                else if(player.isFalling) {
-                    player.svartaJump(levelRect.top, levelRect.bottom-levelRect.top);
-                }
-            }*/
-
-
-            //odrazeni od boku
-
-
-
-
-            //odrazeni od stropu
-
+            }
+        }
+        catch (Exception e){
 
         }
-        else if(!player.isJumping) {
-            //player.fall(screenRatioY);
-        }
-
-        /*if(player.isJumping && levels.isBouncable(player.getLeftBoundary(),player.getRightBoundary(),player.getBottomBoundary())){
-            player.changeJumpDirection();
-        }*/
-
     }
 
     private void draw() {
@@ -241,16 +208,26 @@ public class GameView extends SurfaceView implements Runnable {
     public void resume() {
         isPlaying = true;
         thread = new Thread(this);
+        startGameTime = System.currentTimeMillis();
         thread.start();
     }
 
     public void pause () {
         try {
             isPlaying = false;
+            elapsedTimeSec += (int)((System.currentTimeMillis() - startGameTime)/2000);
             thread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public void onStop(){
+        DBHelper mydb = new DBHelper(getContext());
+        elapsedTimeSec += (int)((System.currentTimeMillis() - startGameTime)/2000);
+        mydb.updateGame(player.x,player.y,selectedLevel,player.numOfJumps,player.numOfFalls,elapsedTimeSec,gameId,topLevel);
+        if(!prefs.getBoolean("isMute",false))
+            mediaPlayer.stop();
     }
 
     @Override
@@ -275,6 +252,7 @@ public class GameView extends SurfaceView implements Runnable {
                 player.stopMove();
                 if(player.isReadyToJump) {
                     player.jump(screenRatioY);
+                    safeBeforeJump();
                 }
                 break;
             }
@@ -283,9 +261,11 @@ public class GameView extends SurfaceView implements Runnable {
         return super.onTouchEvent(event);
     }
 
-    public void checkColision(){
-        //down direction
-        //if(player.y + player.height)
+    private void safeBeforeJump(){
+        DBHelper mydb = new DBHelper(getContext());
+        elapsedTimeSec += (int)((System.currentTimeMillis() - startGameTime)/2000);
+        mydb.updateGame(player.x,player.y,selectedLevel,player.numOfJumps,player.numOfFalls,elapsedTimeSec,gameId,topLevel);
+        startGameTime = System.currentTimeMillis();
     }
 
 }

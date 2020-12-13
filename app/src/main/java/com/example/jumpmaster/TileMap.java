@@ -96,10 +96,35 @@ public class TileMap {
                     mapSet[i] = new Tile('0', TileType.AIR, BitmapFactory.decodeResource(resource, R.drawable.empty));
                     break;
                 }
-                case 'f' : {
-                    mapSet[i] =  new Tile('f', TileType.GROUND, BitmapFactory.decodeResource(resource, R.drawable.left_corner));
+                case 'a' : {
+                    mapSet[i] =  new Tile('f', TileType.GROUND, BitmapFactory.decodeResource(resource, R.drawable.a_floor));
                     break;
                 }
+                case 'b' : {
+                    mapSet[i] =  new Tile('f', TileType.GROUND, BitmapFactory.decodeResource(resource, R.drawable.b_floor));
+                    break;
+                }
+                case 'c' : {
+                    mapSet[i] =  new Tile('f', TileType.GROUND, BitmapFactory.decodeResource(resource, R.drawable.c_floor));
+                    break;
+                }
+                case 'd' : {
+                    mapSet[i] =  new Tile('f', TileType.GROUND, BitmapFactory.decodeResource(resource, R.drawable.d_floor));
+                    break;
+                }
+                case 'e' : {
+                    mapSet[i] =  new Tile('f', TileType.GROUND, BitmapFactory.decodeResource(resource, R.drawable.e_floor));
+                    break;
+                }
+                case 'f' : {
+                    mapSet[i] =  new Tile('f', TileType.GROUND, BitmapFactory.decodeResource(resource, R.drawable.f_floor));
+                    break;
+                }
+                case 'g' : {
+                    mapSet[i] =  new Tile('f', TileType.GROUND, BitmapFactory.decodeResource(resource, R.drawable.g_floor));
+                    break;
+                }
+
                 default: {
                     break;
                 }

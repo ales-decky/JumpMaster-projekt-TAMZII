@@ -3,6 +3,7 @@ package com.example.jumpmaster;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.media.AudioAttributes;
@@ -25,6 +26,7 @@ public class GameView extends SurfaceView implements Runnable {
     private int topLevel;
     private int gameId;
     private int elapsedTimeSec;
+    private boolean isWon = false;
 
     private long startGameTime;
 
@@ -43,8 +45,9 @@ public class GameView extends SurfaceView implements Runnable {
 
         prefs = activity.getSharedPreferences("game",Context.MODE_PRIVATE);
 
-        if(!prefs.getBoolean("isMute",false))
+        if(!prefs.getBoolean("isMute",false)) {
             mediaPlayer.start();
+        }
 
         this.screenX = screenX;
         this.screenY = screenY;
@@ -60,10 +63,12 @@ public class GameView extends SurfaceView implements Runnable {
 
         backgroundStill = new Background(screenX,screenY,getResources(),R.drawable.no_sky_background);
 
-        levels = new TileMap[2];
+        levels = new TileMap[5];
         levels[0] = new TileMap(getResources(), screenX, screenY, 0);
         levels[1] = new TileMap(getResources(), screenX, screenY, 1);
-
+        levels[2] = new TileMap(getResources(), screenX, screenY, 2);
+        levels[3] = new TileMap(getResources(), screenX, screenY, 3);
+        levels[4] = new TileMap(getResources(), screenX, screenY, 4);
 
         player = new Player(screenY,screenX,getResources(),playerX,playerY, numOfJumps, numOfFalls);
 
@@ -111,6 +116,7 @@ public class GameView extends SurfaceView implements Runnable {
                 if(selectedLevel > levels.length-1){
                     pause();
                     //dodelat you won efect
+                    isWon = true;
                 }
                 player.y += screenY;
                 playerRect = player.getCollisionShape();
@@ -192,6 +198,14 @@ public class GameView extends SurfaceView implements Runnable {
             levels[selectedLevel].redraw(canvas);
 
             player.redraw(canvas);
+
+            if(isWon){
+                Paint paint = new Paint();
+
+                paint.setColor(Color.RED);
+                paint.setTextSize(70);
+                canvas.drawText("You won the game!", screenX/4, screenY/2, paint);
+            }
 
             getHolder().unlockCanvasAndPost(canvas);
         }

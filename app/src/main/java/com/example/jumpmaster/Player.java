@@ -121,7 +121,7 @@ public class Player {
 
         if(playerX == 0 && playerY == 0) {
             x = screenX / 2;
-            y = 3 * drawHeight;
+            y = screenY - 3* drawHeight;
         }
         else {
             x = playerX;
@@ -141,6 +141,9 @@ public class Player {
 
         width = drawWidth;
         height = drawHeight;
+
+
+
     }
 
     public void redraw(Canvas canvas){
@@ -229,11 +232,11 @@ public class Player {
 
         canvas.drawBitmap(Bitmap.createBitmap(bInput,0,0, bInput.getWidth(), bInput.getHeight(), m, true ), null,
                 new RectF(x, y, x + drawWidth, y + drawHeight), null);
-        Paint paint = new Paint();
+        /*Paint paint = new Paint();
         paint.setColor(Color.RED);
         paint.setStrokeWidth(5);
         paint.setStyle(Paint.Style.STROKE);
-        canvas.drawRect(getCollisionShape(), paint);
+        canvas.drawRect(getCollisionShape(), paint);*/
     }
 
     public void move(Direction dir, float ratio){

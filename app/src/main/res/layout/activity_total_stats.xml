@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="95sp"
+        android:layout_marginTop="25sp"
         android:text="@string/app_name"
         android:textSize="58sp" />
 
@@ -30,6 +30,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
+        android:layout_above="@id/falls"
         android:text="Number of jumps: 0"
         android:textSize="30sp" />
 
@@ -37,8 +38,8 @@
         android:id="@+id/falls"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/jumps"
         android:layout_centerInParent="true"
+        android:layout_above="@id/elapsedTime"
         android:text="Number of falls: 0"
         android:textSize="30sp" />
 
@@ -46,7 +47,7 @@
         android:id="@+id/elapsedTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/falls"
+        android:layout_above="@id/topLevel"
         android:layout_centerInParent="true"
         android:text="Elapsed time: 0 sec"
         android:textSize="30sp" />
@@ -55,7 +56,6 @@
         android:id="@+id/topLevel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/elapsedTime"
         android:layout_centerInParent="true"
         android:text="Top achieved level: 0"
         android:textSize="30sp" />
